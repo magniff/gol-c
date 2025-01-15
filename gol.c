@@ -1,4 +1,3 @@
-#include <errno.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -66,8 +65,9 @@ World new_world(unsigned int width, unsigned int height) {
 int main(int argc, char** argv) {
     srand(time(NULL));
     struct winsize size;
-    if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &size) == -1) {
-        exit(-1);
+    if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &size) != 0) {
+        perror("ioctl failed");
+        exit(EXIT_FAILURE);
     };
     World world = new_world(size.ws_col, size.ws_row);
     printf("\x1B[?25l\x1B[1;1H");
@@ -79,13 +79,13 @@ int main(int argc, char** argv) {
         ssize_t next_index = 1 - div(counter, 2).rem;
         for (unsigned lineno = 0; lineno < world.height; lineno++) {
             for (unsigned int rowno = 0; rowno < world.width; rowno++) {
-                short alive_around = 0;
                 CellState* current_state = &get_cell(&world, rowno, lineno)->pair[current_index];
                 CellState* next_state = &get_cell(&world, rowno, lineno)->pair[next_index];
 
+                short alive_around = 0;
                 for (int vertical_shift = -1; vertical_shift <= 1; vertical_shift++) {
                     for (int horizontal_shift = -1; horizontal_shift <= 1; horizontal_shift++) {
-                        if (vertical_shift == 0 && horizontal_shift && 0) {
+                        if (vertical_shift == 0 && horizontal_shift == 0) {
                             continue;
                         }
                         if (get_cell(&world, rowno + horizontal_shift, lineno + vertical_shift)
