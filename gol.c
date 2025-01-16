@@ -27,8 +27,8 @@ typedef struct {
 } World;
 
 Cell* get_cell(World* world, int x, int y) {
-    unsigned int normalized_x = div(div(x, world->width).rem + world->width, world->width).rem;
-    unsigned int normalized_y = div(div(y, world->height).rem + world->height, world->height).rem;
+    unsigned int normalized_x = (x % world->width + world->width) % world->width;
+    unsigned int normalized_y = (y % world->height + world->height) % world->height;
     return &world->cells[normalized_y * world->width + normalized_x];
 }
 
