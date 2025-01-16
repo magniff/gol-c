@@ -1,3 +1,4 @@
+#include <limits.h>
 #include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -13,7 +14,7 @@ typedef enum {
 
 typedef struct {
     CellStateType state;
-    unsigned short how_long;
+    unsigned char how_long;
 } CellState;
 
 typedef struct {
@@ -48,7 +49,7 @@ World new_world(unsigned int width, unsigned int height) {
                 how_long = 0;
             };
 
-            cells[line_counter * width + col_counter] =
+            Cell new_cell = cells[line_counter * width + col_counter] =
                 (Cell){.pair = {
                            (CellState){state = state, how_long = how_long},
                            (CellState){state = state, how_long = how_long},
@@ -75,16 +76,16 @@ int main(int argc, char** argv) {
 
     while (1) {
         // computing
-        ssize_t current_index = div(counter, 2).rem;
-        ssize_t next_index = 1 - div(counter, 2).rem;
+        unsigned char current_index = div(counter, 2).rem;
+        unsigned char next_index = 1 - div(counter, 2).rem;
         for (unsigned lineno = 0; lineno < world.height; lineno++) {
             for (unsigned int rowno = 0; rowno < world.width; rowno++) {
                 CellState* current_state = &get_cell(&world, rowno, lineno)->pair[current_index];
                 CellState* next_state = &get_cell(&world, rowno, lineno)->pair[next_index];
 
                 short alive_around = 0;
-                for (int vertical_shift = -1; vertical_shift <= 1; vertical_shift++) {
-                    for (int horizontal_shift = -1; horizontal_shift <= 1; horizontal_shift++) {
+                for (char vertical_shift = -1; vertical_shift <= 1; vertical_shift++) {
+                    for (char horizontal_shift = -1; horizontal_shift <= 1; horizontal_shift++) {
                         if (vertical_shift == 0 && horizontal_shift == 0) {
                             continue;
                         }
@@ -111,7 +112,7 @@ int main(int argc, char** argv) {
                         } else {
                             next_state->state = Dead;
                             next_state->how_long =
-                                current_state->how_long < 255 ? 1 + current_state->how_long : 255;
+                                current_state->how_long < UCHAR_MAX ? 1 + current_state->how_long : UCHAR_MAX;
                         }
                         break;
                 }
@@ -125,7 +126,7 @@ int main(int argc, char** argv) {
                     printf("\x1B[48;2;255;255;255m ");
                     break;
                 case Dead:
-                    unsigned short color = 255 - cell->pair[current_index].how_long;
+                    unsigned short color = UCHAR_MAX - cell->pair[current_index].how_long;
                     unsigned short red = color / 2;
                     unsigned short green = color / 5;
                     unsigned short blue = color;
